@@ -25,7 +25,7 @@ gel_image_uploaded = st.file_uploader(
     type=["tif","tiff","png","jpg", "jpeg"])
 if gel_image_uploaded is not None:
     gel_image_bytes = gel_image_uploaded.getvalue()
-    gel_image_PIL = Image.open(io.Bytes(gel_image_bytes))
+    gel_image_PIL = Image.open(io.BytesIO(gel_image_bytes))
     gel_image_original = np.array(gel_image_PIL)   
 
     # convert RGBA/RGB to BGR for OpenCV
