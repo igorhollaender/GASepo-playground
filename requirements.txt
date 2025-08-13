@@ -1,4 +1,5 @@
 streamlit
 Pillow
 streamlit-drawable-canvas
+streamlit-cropper
 opencv-python-headless

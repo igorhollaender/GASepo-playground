@@ -1,7 +1,7 @@
 #
 #   G A S e p o  P l a y g r o u n d
 #
-#   Last Update: IH250812
+#   Last Update: IH250813
 #
 #
 
@@ -12,7 +12,7 @@ from PIL import Image
 import streamlit as st
 from streamlit_drawable_canvas import st_canvas
 
-GASepoPG_version = "250812f"
+GASepoPG_version = "250813a"
 
 def main():
 
@@ -45,26 +45,26 @@ def main():
     
     # prepare canvas_1 for drawing
 
-    canvas_1_height, canvas_1_width = gel_image_display.shape[:2]
-    # Scale canvas for display if image is too wide
-    if canvas_1_width > 800:  #IH250812 HEURISTIC
-        aspect_ratio = canvas_1_height / canvas_1_width
-        canvas_1_width = 800
-        canvas_1_height = int(canvas_1_width * aspect_ratio)
+    # canvas_1_height, canvas_1_width = gel_image_display.shape[:2]
+    # # Scale canvas for display if image is too wide
+    # if canvas_1_width > 800:  #IH250812 HEURISTIC
+    #     aspect_ratio = canvas_1_height / canvas_1_width
+    #     canvas_1_width = 800
+    #     canvas_1_height = int(canvas_1_width * aspect_ratio)
 
-    canvas_1 = st_canvas(
-        fill_color="rgba(255, 165, 0, 0.3)",
-        stroke_width=2,
-        stroke_color="#FFA500",
-        background_image=gel_image_display,
-        # update_streamlit=realtime_update, # Enable real-time updates only for the 3rd point
-        height=canvas_1_height,  #IH250812 NOT ACTIVE FOR NOW
-        width=canvas_1_width,   # IH250812 NOT ACTIVE FOR NOW
-        use_container_width=True,
-        drawing_mode="point",
-        # initial_drawing=initial_drawing if initial_drawing["objects"] else None,
-        key="canvas_1",
-    )
+    # canvas_1 = st_canvas(
+    #     fill_color="rgba(255, 165, 0, 0.3)",
+    #     stroke_width=2,
+    #     stroke_color="#FFA500",
+    #     background_image=gel_image_display,
+    #     # update_streamlit=realtime_update, # Enable real-time updates only for the 3rd point
+    #     height=canvas_1_height,  #IH250812 NOT ACTIVE FOR NOW
+    #     width=canvas_1_width,   # IH250812 NOT ACTIVE FOR NOW
+    #     use_container_width=True,
+    #     drawing_mode="point",
+    #     # initial_drawing=initial_drawing if initial_drawing["objects"] else None,
+    #     key="canvas_1",
+    # )
 
 
 #----------
