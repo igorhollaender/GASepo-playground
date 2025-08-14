@@ -21,17 +21,18 @@ import pickle
 from PIL import Image
 import streamlit as st
 from streamlit_drawable_canvas import st_canvas
+from streamlit_cropper import st_cropper
 
-GASepoPG_version = "250814d"
+GASepoPG_version = "250814e"
   
 uploaded_buffer = None  
 
 def main():
 
     # ---- initialize session state
-    st.session_state.setdefault("gel_image_uploaded", None)
-    if 'key1' not in st.session_state:   #IH250814 for debugging only
-        st.session_state.key1 = 'value'
+    
+    if 'gel_image_uploaded' not in st.session_state:   
+        st.session_state.gel_image_uploaded = None
 
     # ---- set up GUI
 
@@ -70,16 +71,15 @@ def main():
 
     # ---- get image
 
-    if st.session_state.gel_image_uploaded is None:
-        gel_image_uploaded = st.file_uploader(
+    gel_image_uploaded_temp = st.file_uploader(
             "Upload a gel image file", 
-            type=["tif","tiff"])
-        st.session_state.gel_image_uploaded = gel_image_uploaded
-    else:
-        gel_image_uploaded = st.session_state.gel_image_uploaded
+            type=["tif","tiff"]
+    )
+
         
-    if gel_image_uploaded is not None:
-        gel_image_bytes = np.asarray(bytearray(gel_image_uploaded.read()), dtype=np.uint8)
+    if gel_image_uploaded_temp is not None:
+        st.session_state.gel_image_uploaded = gel_image_uploaded_temp
+        gel_image_bytes = np.asarray(bytearray(st.session_state.gel_image_uploaded.read()), dtype=np.uint8)
         gel_image_CV = cv2.imdecode(gel_image_bytes, cv2.IMREAD_UNCHANGED)
 
         if gel_image_CV is None:
@@ -96,9 +96,14 @@ def main():
                 st.image(gel_image_display, caption="16-bit Grayscale Image", width=300, use_container_width=False)
             else:
                 st.image(cv2.cvtColor(gel_image_display, cv2.COLOR_BGR2RGB), caption="16-bit Color Image", width=300, use_container_width=False)
+    
+            gel_image_cropped = st_cropper(gel_image_CV)
+            st.write("Cropped image dimensions:", gel_image_cropped.shape)
     else:
         st.write("Please upload a gel image file to proceed")
     
+    
+
     # prepare canvas_1 for drawing
 
     # canvas_1_height, canvas_1_width = gel_image_display.shape[:2]
@@ -143,6 +148,7 @@ def load_state_from_pickle(file_path="gasepo_playground_state.pkl"):
             loaded_state = pickle.load(f)
             for key, value in loaded_state.items():
                 st.session_state[key] = value
+                st.write(f"Loaded {key}: value is {value}") 
     except FileNotFoundError:
         st.warning("No saved state found. Starting fresh!")
 
@@ -152,6 +158,8 @@ def load_state_from_buffer():
             loaded_state = pickle.load(uploaded_buffer)
             for key, value in loaded_state.items():
                 st.session_state[key] = value
+                st.write(f"Loaded {key}: value is {value}")
+
 
 def reset_session_state():
     for key in list(st.session_state.keys()):
