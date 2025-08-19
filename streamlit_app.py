@@ -1,7 +1,7 @@
 #
 #   G A S e p o  P l a y g r o u n d
 #
-#   Last Update: IH250814
+#   Last Update: IH250819
 #
 #
 
@@ -23,7 +23,7 @@ import streamlit as st
 from streamlit_drawable_canvas import st_canvas
 from streamlit_cropper import st_cropper
 
-GASepoPG_version = "250814e"
+GASepoPG_version = "250819a"
   
 uploaded_buffer = None  
 
@@ -80,7 +80,7 @@ def main():
     if gel_image_uploaded_temp is not None:
         st.session_state.gel_image_uploaded = gel_image_uploaded_temp
         gel_image_bytes = np.asarray(bytearray(st.session_state.gel_image_uploaded.read()), dtype=np.uint8)
-        gel_image_CV = cv2.imdecode(gel_image_bytes, cv2.IMREAD_UNCHANGED)
+        gel_image_CV = cv2.imdecode(gel_image_bytes, cv2.IMREAD_UNCHANGED)           
 
         if gel_image_CV is None:
             st.error("Failed to read image. Make sure it's a valid 16-bit TIFF.")
@@ -90,43 +90,46 @@ def main():
             # Normalize for display (Streamlit/PIL can't show 16-bit directly)
             gel_image_normalized = cv2.normalize(gel_image_CV, None, 0, 255, cv2.NORM_MINMAX)
             gel_image_display = np.uint8(gel_image_normalized)
-
+            
             # Convert to RGB if needed
             if len(gel_image_display.shape) == 2:
                 st.image(gel_image_display, caption="16-bit Grayscale Image", width=300, use_container_width=False)
             else:
                 st.image(cv2.cvtColor(gel_image_display, cv2.COLOR_BGR2RGB), caption="16-bit Color Image", width=300, use_container_width=False)
+                
+            # prepare canvas_1 for drawing
+
+            canvas_1_height, canvas_1_width = gel_image_display.shape[:2]
+            # Scale canvas for display if image is too wide
+            if canvas_1_width > 800:  #IH250812 HEURISTIC
+                aspect_ratio = canvas_1_height / canvas_1_width
+                canvas_1_width = 800
+                canvas_1_height = int(canvas_1_width * aspect_ratio)
+
+            
+            canvas_1 = st_canvas(
+                fill_color="rgba(255, 165, 0, 0.3)",
+                stroke_width=2,
+                stroke_color="#FCE21B",
+                # background_color="#89B01F",
+                # background_image=gel_image_PIL,  #IH250819 DOES NOT WOrk (version incompatibility?) - asks for image_to_url  (?)
+                # update_streamlit=realtime_update, # Enable real-time updates only for the 3rd point
+                height=canvas_1_height,  #IH250812 NOT ACTIVE FOR NOW
+                width=canvas_1_width,   # IH250812 NOT ACTIVE FOR NOW
+                drawing_mode="rect",
+                initial_drawing=canvas_1_initial_drawing(),
+                key="canvas_1",
+                )
     
-            gel_image_cropped = st_cropper(gel_image_CV)
-            st.write("Cropped image dimensions:", gel_image_cropped.shape)
+            # st.write(f"Canvas (json_data): {canvas_1.json_data}")
     else:
         st.write("Please upload a gel image file to proceed")
     
     
 
-    # prepare canvas_1 for drawing
 
-    # canvas_1_height, canvas_1_width = gel_image_display.shape[:2]
-    # # Scale canvas for display if image is too wide
-    # if canvas_1_width > 800:  #IH250812 HEURISTIC
-    #     aspect_ratio = canvas_1_height / canvas_1_width
-    #     canvas_1_width = 800
-    #     canvas_1_height = int(canvas_1_width * aspect_ratio)
-
-    # canvas_1 = st_canvas(
-    #     fill_color="rgba(255, 165, 0, 0.3)",
-    #     stroke_width=2,
-    #     stroke_color="#FFA500",
-    #     background_image=gel_image_display,
-    #     # update_streamlit=realtime_update, # Enable real-time updates only for the 3rd point
-    #     height=canvas_1_height,  #IH250812 NOT ACTIVE FOR NOW
-    #     width=canvas_1_width,   # IH250812 NOT ACTIVE FOR NOW
-    #     use_container_width=True,
-    #     drawing_mode="point",
-    #     # initial_drawing=initial_drawing if initial_drawing["objects"] else None,
-    #     key="canvas_1",
-    # )
-
+    
+    
 
 #---- state management
 # using pickle format for storing session state
@@ -167,6 +170,46 @@ def reset_session_state():
     st.session_state.gel_image_uploaded = None  # Reset the uploaded image state
     st.write("Session state has been reset.")
     
+
+def canvas_1_initial_drawing():
+     return {
+     'version': '4.4.0', 
+     'objects': [
+         {
+         'type': 'rect', 
+         'version': '4.4.0', 
+         'originX': 'left', 'originY': 'top', 
+         'left': 99, 'top': 201, 'width': 133, 'height': 133, 
+         'fill': 'rgba(255, 165, 0, 0.3)', 
+         'stroke': '#FCE21B', 
+            'strokeWidth': 2, 
+            'strokeDashArray': None, 
+            'strokeLineCap': 'butt', 
+            'strokeDashOffset': 0, 
+            'strokeLineJoin': 'miter', 
+            'strokeUniform': True, 
+            'strokeMiterLimit': 4, 
+        'scaleX': 1, 'scaleY': 1, 
+        'angle': 0, 
+        'flipX': False, 'flipY': False, 
+        'opacity': 1, 
+        'shadow': None, 
+        'visible': True, 
+        'backgroundColor': '', 
+        'fillRule': 'nonzero', 
+        'paintFirst': 'fill', 
+        'globalCompositeOperation': 
+        'source-over', 
+        'skewX': 0, 'skewY': 0, 
+        'rx': 0, 'ry': 0}]}
+
+def image_to_url_fake(image):
+    """
+    Fake function to simulate image to URL conversion.
+    In a real application, this would convert the image to a URL for display.
+    """
+    return "https://example.com/fake_image_url.png"
+
 #----------
 if __name__ == "__main__":
     
