@@ -1,7 +1,7 @@
 #
 #   G A S e p o  P l a y g r o u n d
 #
-#   Last Update: IH250819
+#   Last Update: IH250820
 #
 #
 
@@ -23,7 +23,7 @@ import streamlit as st
 from streamlit_drawable_canvas import st_canvas
 from streamlit_cropper import st_cropper
 
-GASepoPG_version = "250819a"
+GASepoPG_version = "250820a"
   
 uploaded_buffer = None  
 
@@ -203,6 +203,7 @@ def canvas_1_initial_drawing():
         'skewX': 0, 'skewY': 0, 
         'rx': 0, 'ry': 0}]}
 
+#IH250820 OBSOLETE
 def image_to_url_fake(image):
     """
     Fake function to simulate image to URL conversion.
