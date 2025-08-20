@@ -113,6 +113,7 @@ def main():
                 stroke_color="#FCE21B",
                 # background_color="#89B01F",
                 # background_image=gel_image_PIL,  #IH250819 DOES NOT WOrk (version incompatibility?) - asks for image_to_url  (?)
+                background_image = Image.fromarray(gel_image_display),
                 # update_streamlit=realtime_update, # Enable real-time updates only for the 3rd point
                 height=canvas_1_height,  #IH250812 NOT ACTIVE FOR NOW
                 width=canvas_1_width,   # IH250812 NOT ACTIVE FOR NOW
