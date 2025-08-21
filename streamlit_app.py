@@ -118,7 +118,8 @@ def main():
                 canvas_1_width = 800
                 canvas_1_height = int(canvas_1_width * aspect_ratio)
 
-            background_image = Image.fromarray(gel_image_display)
+            background_image = Image.fromarray(200-gel_image_display) # IH250821 invert image for better visibility on canvas
+                           #IH250821 EXPERIMENTAL enhance high bands (thats why we use 200 and not 255)
             
             canvas_1 = st_canvas(
                 fill_color="rgba(255, 165, 0, 0.3)",
@@ -129,7 +130,7 @@ def main():
                 height=canvas_1_height,
                 width=canvas_1_width, 
                 drawing_mode="transform",
-                initial_drawing=canvas_1_initial_drawing(background_image),
+                initial_drawing=canvas_1_initial_drawing(background_image,canvas_1_width,canvas_1_height),
                 key="canvas_1",
                 )
     
@@ -183,7 +184,7 @@ def reset_session_state():
     st.write("Session state has been reset.")
     
 
-def canvas_1_initial_drawing(image: Image.Image):
+def canvas_1_initial_drawing(image: Image.Image, canvas_width: int, canvas_height):
      return {
      'version': '4.4.0', 
      'objects': [
@@ -191,10 +192,10 @@ def canvas_1_initial_drawing(image: Image.Image):
          'type': 'rect', 
          'version': '4.4.0', 
          'originX': 'left', 'originY': 'top', 
-            'left': image.width*0.2,    #IH250821. This does not work properly 
-            'top': image.height*0.1, 
-            'width': image.width*0.02,
-            'height': image.height*0.35, 
+            'left': canvas_width*(0.5-0.04/2),   
+            'top': canvas_height*0.2, 
+            'width': canvas_width*0.04,
+            'height': canvas_height*0.65, 
          'fill': 'rgba(255, 165, 0, 0.3)', 
          'stroke': '#FCE21B', 
             'strokeWidth': 2, 
