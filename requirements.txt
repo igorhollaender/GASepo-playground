@@ -1,4 +1,4 @@
-streamlit==1.40
+streamlit==1.40.0
 Pillow
 streamlit-drawable-canvas==0.9.2
 streamlit-cropper
