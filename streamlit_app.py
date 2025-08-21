@@ -19,6 +19,11 @@
 #                streamlit run streamlit_app.py --server.enableCORS false --server.enableXsrfProtection false
 #
 # ------------------------------------------
+#   IMPORTANT:
+#       for drawing_canvas to work properly, you need to use
+#       streamlit version 1.40 (1.42 does not work).
+#       and drawing_canvas version 0.9.2.  (0.9.3 does not work).
+# ------------------------------------------
 
 
 import cv2
@@ -30,7 +35,7 @@ import streamlit as st
 from streamlit_drawable_canvas import st_canvas
 from streamlit_cropper import st_cropper
 
-GASepoPG_version = "250821a"
+GASepoPG_version = "250821b"
   
 uploaded_buffer = None  
 
@@ -113,19 +118,18 @@ def main():
                 canvas_1_width = 800
                 canvas_1_height = int(canvas_1_width * aspect_ratio)
 
+            background_image = Image.fromarray(gel_image_display)
             
             canvas_1 = st_canvas(
                 fill_color="rgba(255, 165, 0, 0.3)",
                 stroke_width=2,
                 stroke_color="#FCE21B",
-                # background_color="#89B01F",
-                # background_image=gel_image_PIL,  #IH250819 DOES NOT WOrk (version incompatibility?) - asks for image_to_url  (?)
-                background_image = Image.fromarray(gel_image_display),
-                # update_streamlit=realtime_update, # Enable real-time updates only for the 3rd point
-                height=canvas_1_height,  #IH250812 NOT ACTIVE FOR NOW
-                width=canvas_1_width,   # IH250812 NOT ACTIVE FOR NOW
+                background_image = background_image,
+                update_streamlit=True, 
+                height=canvas_1_height,
+                width=canvas_1_width, 
                 drawing_mode="transform",
-                initial_drawing=canvas_1_initial_drawing(),
+                initial_drawing=canvas_1_initial_drawing(background_image),
                 key="canvas_1",
                 )
     
@@ -179,7 +183,7 @@ def reset_session_state():
     st.write("Session state has been reset.")
     
 
-def canvas_1_initial_drawing():
+def canvas_1_initial_drawing(image: Image.Image):
      return {
      'version': '4.4.0', 
      'objects': [
@@ -187,7 +191,10 @@ def canvas_1_initial_drawing():
          'type': 'rect', 
          'version': '4.4.0', 
          'originX': 'left', 'originY': 'top', 
-         'left': 99, 'top': 201, 'width': 133, 'height': 133, 
+            'left': image.width*0.2,    #IH250821. This does not work properly 
+            'top': image.height*0.1, 
+            'width': image.width*0.02,
+            'height': image.height*0.35, 
          'fill': 'rgba(255, 165, 0, 0.3)', 
          'stroke': '#FCE21B', 
             'strokeWidth': 2, 
@@ -210,14 +217,6 @@ def canvas_1_initial_drawing():
         'source-over', 
         'skewX': 0, 'skewY': 0, 
         'rx': 0, 'ry': 0}]}
-
-#IH250820 OBSOLETE
-def image_to_url_fake(image):
-    """
-    Fake function to simulate image to URL conversion.
-    In a real application, this would convert the image to a URL for display.
-    """
-    return "https://example.com/fake_image_url.png"
 
 #----------
 if __name__ == "__main__":
