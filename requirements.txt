@@ -1,5 +1,6 @@
 streamlit==1.40.0
 Pillow
+plotly
 streamlit-drawable-canvas==0.9.2
 streamlit-cropper
 opencv-python-headless

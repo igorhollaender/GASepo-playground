@@ -31,11 +31,12 @@ import io
 import numpy as np
 import pickle
 from PIL import Image
+import plotly.express as px
 import streamlit as st
 from streamlit_drawable_canvas import st_canvas
-from streamlit_cropper import st_cropper
+# from streamlit_cropper import st_cropper #IH
 
-GASepoPG_version = "250821b"
+GASepoPG_version = "250821c"
   
 uploaded_buffer = None  
 
@@ -83,12 +84,12 @@ def main():
 
     # ---- get image
 
+    # File uploader for gel image
     gel_image_uploaded_temp = st.file_uploader(
             "Upload a gel image file", 
             type=["tif","tiff"]
     )
 
-        
     if gel_image_uploaded_temp is not None:
         st.session_state.gel_image_uploaded = gel_image_uploaded_temp
         gel_image_bytes = np.asarray(bytearray(st.session_state.gel_image_uploaded.read()), dtype=np.uint8)
@@ -118,10 +119,11 @@ def main():
                 canvas_1_width = 800
                 canvas_1_height = int(canvas_1_width * aspect_ratio)
 
-            background_image = Image.fromarray(200-gel_image_display) # IH250821 invert image for better visibility on canvas
+            background_image = Image.fromarray(220-gel_image_display) # IH250821 invert image for better visibility on canvas
                            #IH250821 EXPERIMENTAL enhance high bands (thats why we use 200 and not 255)
             
             canvas_1 = st_canvas(
+
                 fill_color="rgba(255, 165, 0, 0.3)",
                 stroke_width=2,
                 stroke_color="#FCE21B",
@@ -133,8 +135,18 @@ def main():
                 initial_drawing=canvas_1_initial_drawing(background_image,canvas_1_width,canvas_1_height),
                 key="canvas_1",
                 )
-    
-            # st.write(f"Canvas (json_data): {canvas_1.json_data}")
+            
+            # st.write(f"Canvas (json_data): {canvas_1.json_data}") 
+            st.write(f"ROI:  " + 
+                     f"left: {canvas_1.json_data['objects'][0]['left']},   " +
+                     f"top: {canvas_1.json_data['objects'][0]['top']},   " +
+                     f"width: {canvas_1.json_data['objects'][0]['width']},   " +
+                     f"height: {canvas_1.json_data['objects'][0]['height']},   " +
+                     f"angle: {canvas_1.json_data['objects'][0]['angle']},   " +
+                       "")
+            #IH250821 we assume the first object to be the expected ROI 
+
+            
     else:
         st.write("Please upload a gel image file to proceed")
     
