@@ -1,7 +1,7 @@
 #
 #   G A S e p o  P l a y g r o u n d
 #
-#   Last Update: IH250820
+#   Last Update: IH250821
 #
 #
 
@@ -10,6 +10,13 @@
 #       to activate requirements.txt update:
 #           visit https://share.streamlit.io/,
 #           select your app, goto (...) and select Reboot  
+#
+#       to activate requirements.txt update in github codespace:
+#           1. stop the server (Ctrl+C in terminal)
+#           2. run `pip install -r requirements.txt` in terminal
+#           3. restart the server (run streamlit_app.py)
+#              or use the full command:
+#                streamlit run streamlit_app.py --server.enableCORS false --server.enableXsrfProtection false
 #
 # ------------------------------------------
 
@@ -23,7 +30,7 @@ import streamlit as st
 from streamlit_drawable_canvas import st_canvas
 from streamlit_cropper import st_cropper
 
-GASepoPG_version = "250820a"
+GASepoPG_version = "250821a"
   
 uploaded_buffer = None  
 
@@ -117,7 +124,7 @@ def main():
                 # update_streamlit=realtime_update, # Enable real-time updates only for the 3rd point
                 height=canvas_1_height,  #IH250812 NOT ACTIVE FOR NOW
                 width=canvas_1_width,   # IH250812 NOT ACTIVE FOR NOW
-                drawing_mode="rect",
+                drawing_mode="transform",
                 initial_drawing=canvas_1_initial_drawing(),
                 key="canvas_1",
                 )
