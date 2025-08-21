@@ -146,7 +146,12 @@ def main():
                        "")
             #IH250821 we assume the first object to be the expected ROI 
 
-            
+            # testing plotly
+            fig = px.line (x=[1,2,3,4,5,6,7,8,9,10],
+                           y=[10,20,30,40,50,60,70,80,90,100])
+
+            st.plotly_chart(fig, use_container_width=True)
+               
     else:
         st.write("Please upload a gel image file to proceed")
     
