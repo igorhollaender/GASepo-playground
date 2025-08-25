@@ -36,12 +36,14 @@ import pickle
 from PIL import Image
 import plotly.express as px
 import streamlit as st
+
 from streamlit_drawable_canvas import st_canvas
 
 from Gepg_imageloader import GelImageLoader
+from Gepg_RIOselector import ROISelector    
 
 
-GASepoPG_version = "250825a"
+GASepoPG_version = "250825b"
   
 uploaded_buffer = None  
 
@@ -51,16 +53,23 @@ def main():
     if 'gel_image_uploaded' not in st.session_state:   
         st.session_state.gel_image_uploaded = None
 
-
-    # ---- setup GUI
     Gepg_GUIsetup()
 
-    #  --- load image
-    gel_image_loader = GelImageLoader()
-    if gel_image_loader.gel_image_uploaded is  None:
-        st.stop()  # Stop execution if no image is uploaded 
+    with st.expander("Image Upload"):
+        gel_image_loader = GelImageLoader()
+        if gel_image_loader.gel_image_uploaded is  None:
+            st.stop()  # Stop execution if no image is uploaded 
+        st.session_state.gel_image_uploaded = gel_image_loader.gel_image_uploaded
 
-    st.session_state.gel_image_uploaded = gel_image_loader.gel_image_uploaded
+    # with st.expander("Lane selector"):  
+    #IH250825 WORKAROUND for some issue with streamlit_drawable_canvas, the canvas 
+    # is not working properly if placed directly in the expander
+
+    ROI_selector = ROISelector(gel_image_8bit=gel_image_loader.gel_image_8bit)
+    ROI_selector.select_ROI() 
+      
+    with st.expander("Testing Plotly"): 
+        TestingPlotly()
 
 
 def Gepg_GUIsetup():
@@ -95,53 +104,16 @@ def Gepg_GUIsetup():
             "This is a playground for development of GASepo, a tool for analyzing gel electrophoresis images. "
             "You can upload images, draw on them, and explore various features."
         )
+        
     
 
+def TestingPlotly():
+    # testing plotly
+    fig = px.line (x=[1,2,3,4,5,6,7,8,9,10],
+                y=[10,20,30,40,50,60,70,80,90,100])
 
-            # prepare canvas_1 for drawing
-
-            canvas_1_height, canvas_1_width = gel_image_display.shape[:2]
-            # Scale canvas for display if image is too wide
-            if canvas_1_width > 800:  #IH250812 HEURISTIC
-                aspect_ratio = canvas_1_height / canvas_1_width
-                canvas_1_width = 800
-                canvas_1_height = int(canvas_1_width * aspect_ratio)
-
-            background_image = Image.fromarray(220-gel_image_display) # IH250821 invert image for better visibility on canvas
-                           #IH250821 EXPERIMENTAL enhance high bands (thats why we use 200 and not 255)
-            
-            canvas_1 = st_canvas(
-
-                fill_color="rgba(255, 165, 0, 0.3)",
-                stroke_width=2,
-                stroke_color="#FCE21B",
-                background_image = background_image,
-                update_streamlit=True, 
-                height=canvas_1_height,
-                width=canvas_1_width, 
-                drawing_mode="transform",
-                initial_drawing=canvas_1_initial_drawing(background_image,canvas_1_width,canvas_1_height),
-                key="canvas_1",
-                )
-            
-            # st.write(f"Canvas (json_data): {canvas_1.json_data}") 
-            st.write(f"ROI:  " + 
-                     f"left: {canvas_1.json_data['objects'][0]['left']},   " +
-                     f"top: {canvas_1.json_data['objects'][0]['top']},   " +
-                     f"width: {canvas_1.json_data['objects'][0]['width']},   " +
-                     f"height: {canvas_1.json_data['objects'][0]['height']},   " +
-                     f"angle: {canvas_1.json_data['objects'][0]['angle']},   " +
-                       "")
-            #IH250821 we assume the first object to be the expected ROI 
-
-            
-    else:
-        st.write("Please upload a gel image file to proceed")
-    
-    
-
-
-    
+    st.plotly_chart(fig, use_container_width=True)
+               
     
 
 #---- state management
@@ -183,41 +155,6 @@ def reset_session_state():
     st.session_state.gel_image_uploaded = None  # Reset the uploaded image state
     st.write("Session state has been reset.")
     
-
-def canvas_1_initial_drawing(image: Image.Image, canvas_width: int, canvas_height):
-     return {
-     'version': '4.4.0', 
-     'objects': [
-         {
-         'type': 'rect', 
-         'version': '4.4.0', 
-         'originX': 'left', 'originY': 'top', 
-            'left': canvas_width*(0.5-0.04/2),   
-            'top': canvas_height*0.2, 
-            'width': canvas_width*0.04,
-            'height': canvas_height*0.65, 
-         'fill': 'rgba(255, 165, 0, 0.3)', 
-         'stroke': '#FCE21B', 
-            'strokeWidth': 2, 
-            'strokeDashArray': None, 
-            'strokeLineCap': 'butt', 
-            'strokeDashOffset': 0, 
-            'strokeLineJoin': 'miter', 
-            'strokeUniform': True, 
-            'strokeMiterLimit': 4, 
-        'scaleX': 1, 'scaleY': 1, 
-        'angle': 0, 
-        'flipX': False, 'flipY': False, 
-        'opacity': 1, 
-        'shadow': None, 
-        'visible': True, 
-        'backgroundColor': '', 
-        'fillRule': 'nonzero', 
-        'paintFirst': 'fill', 
-        'globalCompositeOperation': 
-        'source-over', 
-        'skewX': 0, 'skewY': 0, 
-        'rx': 0, 'ry': 0}]}
 
 #----------
 if __name__ == "__main__":
