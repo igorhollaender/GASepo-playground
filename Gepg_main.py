@@ -40,16 +40,19 @@ import streamlit as st
 from streamlit_drawable_canvas import st_canvas
 
 from Gepg_imageloader import GelImageLoader
-from Gepg_RIOselector import ROISelector    
+from Gepg_ROIselector import ROISelector    
+from Gepg_statemanager import StateManager
 
 
-GASepoPG_version = "250825b"
+GASepoPG_version = "250825c"
   
-uploaded_buffer = None  
+uploaded_buffer = None
+stateManager = StateManager()   
 
 def main():
 
     # ---- initialize session state
+
     if 'gel_image_uploaded' not in st.session_state:   
         st.session_state.gel_image_uploaded = None
 
@@ -66,14 +69,30 @@ def main():
     # is not working properly if placed directly in the expander
 
     ROI_selector = ROISelector(gel_image_8bit=gel_image_loader.gel_image_8bit)
-    ROI_selector.select_ROI() 
-      
+    ROI_selector.select_ROI()
+
+    gel_image_lane1 = ROI_selector.crop_rotated_rect(
+            image=gel_image_loader.gel_image_8bit,
+            centerleft  =  ROI_selector.lane_ROI[0]['left'],
+            centertop   =  ROI_selector.lane_ROI[0]['top'],
+            width       =  ROI_selector.lane_ROI[0]['width'],
+            height      =  ROI_selector.lane_ROI[0]['height'],
+            angle       =  ROI_selector.lane_ROI[0]['angle']
+        )
+    
+    st.image(gel_image_loader.gel_image_8bit)  #IH250825 for debugging only
+
+    with st.expander("Lane Viewer"):
+        st.image(gel_image_lane1, caption="Lane1",width=30)
+
     with st.expander("Testing Plotly"): 
         TestingPlotly()
 
 
 def Gepg_GUIsetup():
 
+    global stateManager
+    
     st.set_page_config(
         page_title="GASepo Playground",
         page_icon=":rocket:",
@@ -83,21 +102,21 @@ def Gepg_GUIsetup():
     st.title(f"GASepo Playground Ver.{GASepoPG_version}")
     st.sidebar.header("GASepo Playground Controls")
     if st.sidebar.button("Store status"):
-        save_state_to_pickle_and_download()
+        stateManager.save_state_to_pickle_and_download()
         st.sidebar.write("Status stored successfully!")
     if st.sidebar.button("Load recent status"):
-        load_state_from_pickle()
+        stateManager.load_state_from_pickle()
         st.sidebar.write("Status loaded successfully!")
     if st.sidebar.button("Load status from file"):
         global uploaded_buffer
         uploaded_buffer = st.sidebar.file_uploader(
             type=["pkl", "pickle"],
             label="Upload a saved state file",
-            on_change=load_state_from_buffer 
+            on_change=stateManager.load_state_from_buffer 
         )
         st.sidebar.write("Status loaded successfully!")
     if st.sidebar.button("Reset"):
-        reset_session_state()
+        stateManager.reset_session_state()
         st.sidebar.write("Status reset successfully!")
     if st.sidebar.button("About"): 
         st.sidebar.write(
@@ -106,7 +125,6 @@ def Gepg_GUIsetup():
         )
         
     
-
 def TestingPlotly():
     # testing plotly
     fig = px.line (x=[1,2,3,4,5,6,7,8,9,10],
@@ -114,48 +132,7 @@ def TestingPlotly():
 
     st.plotly_chart(fig, use_container_width=True)
                
-    
-
-#---- state management
-# using pickle format for storing session state
-
-def save_state_to_pickle_and_download():
-    buffer = io.BytesIO()
-    pickle.dump(st.session_state, buffer)
-    buffer.seek(0)
-    st.sidebar.download_button(
-        label="Download State",
-        data=buffer,
-        file_name="gasepo_playground_state.pkl",
-        mime="application/octet-stream"
-    )
-
-def load_state_from_pickle(file_path="gasepo_playground_state.pkl"):
-    try:
-        with open(file_path, "rb") as f:
-            loaded_state = pickle.load(f)
-            for key, value in loaded_state.items():
-                st.session_state[key] = value
-                st.write(f"Loaded {key}: value is {value}") 
-    except FileNotFoundError:
-        st.warning("No saved state found. Starting fresh!")
-
-def load_state_from_buffer():
-    global uploaded_buffer
-    if uploaded_buffer is not None:
-            loaded_state = pickle.load(uploaded_buffer)
-            for key, value in loaded_state.items():
-                st.session_state[key] = value
-                st.write(f"Loaded {key}: value is {value}")
-
-
-def reset_session_state():
-    for key in list(st.session_state.keys()):
-        del st.session_state[key]
-    st.session_state.gel_image_uploaded = None  # Reset the uploaded image state
-    st.write("Session state has been reset.")
-    
-
+  
 #----------
 if __name__ == "__main__":
     
