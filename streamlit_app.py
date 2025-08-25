@@ -1,10 +1,13 @@
 #
-#   G A S e p o  P l a y g r o u n d
 #
-#   Last Update: IH250821
+#   G e p g _ m a i n . p y
 #
+# ------------------------------------------
+#   G A S e p o  P l a y g r o u n d  Main
 #
-
+#   Last Update: IH250825
+# 
+# 
 # ------------------------------------------
 #   Notes:
 #       to activate requirements.txt update:
@@ -34,20 +37,33 @@ from PIL import Image
 import plotly.express as px
 import streamlit as st
 from streamlit_drawable_canvas import st_canvas
-# from streamlit_cropper import st_cropper #IH
 
-GASepoPG_version = "250821c"
+from Gepg_imageloader import GelImageLoader
+
+
+GASepoPG_version = "250825a"
   
 uploaded_buffer = None  
 
 def main():
 
     # ---- initialize session state
-    
     if 'gel_image_uploaded' not in st.session_state:   
         st.session_state.gel_image_uploaded = None
 
-    # ---- set up GUI
+
+    # ---- setup GUI
+    Gepg_GUIsetup()
+
+    #  --- load image
+    gel_image_loader = GelImageLoader()
+    if gel_image_loader.gel_image_uploaded is  None:
+        st.stop()  # Stop execution if no image is uploaded 
+
+    st.session_state.gel_image_uploaded = gel_image_loader.gel_image_uploaded
+
+
+def Gepg_GUIsetup():
 
     st.set_page_config(
         page_title="GASepo Playground",
@@ -82,34 +98,6 @@ def main():
     
 
 
-    # ---- get image
-
-    # File uploader for gel image
-    gel_image_uploaded_temp = st.file_uploader(
-            "Upload a gel image file", 
-            type=["tif","tiff"]
-    )
-
-    if gel_image_uploaded_temp is not None:
-        st.session_state.gel_image_uploaded = gel_image_uploaded_temp
-        gel_image_bytes = np.asarray(bytearray(st.session_state.gel_image_uploaded.read()), dtype=np.uint8)
-        gel_image_CV = cv2.imdecode(gel_image_bytes, cv2.IMREAD_UNCHANGED)           
-
-        if gel_image_CV is None:
-            st.error("Failed to read image. Make sure it's a valid 16-bit TIFF.")
-        else:
-            st.write(f"Image shape: {gel_image_CV.shape}, dtype: {gel_image_CV.dtype}")
-
-            # Normalize for display (Streamlit/PIL can't show 16-bit directly)
-            gel_image_normalized = cv2.normalize(gel_image_CV, None, 0, 255, cv2.NORM_MINMAX)
-            gel_image_display = np.uint8(gel_image_normalized)
-            
-            # Convert to RGB if needed
-            if len(gel_image_display.shape) == 2:
-                st.image(gel_image_display, caption="16-bit Grayscale Image", width=300, use_container_width=False)
-            else:
-                st.image(cv2.cvtColor(gel_image_display, cv2.COLOR_BGR2RGB), caption="16-bit Color Image", width=300, use_container_width=False)
-                
             # prepare canvas_1 for drawing
 
             canvas_1_height, canvas_1_width = gel_image_display.shape[:2]
