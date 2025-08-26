@@ -1,7 +1,7 @@
 #
 #   G e p g _ R O I s e l e c t o r . p y
 #
-#   Last Update: IH250825
+#   Last Update: IH250826
 # 
 # 
 #
@@ -28,11 +28,17 @@ class ROISelector:
         self.background_image = Image.fromarray(220-gel_image_8bit) # IH250821 invert image for better visibility on canvas
                 #IH250821 EXPERIMENTAL enhance high bands (thats why we use 200 and not 255)
         self.canvas_1_height, self.canvas_1_width = gel_image_8bit.shape[:2]
+        # st.write(f"W,H: {self.canvas_1_width}, {self.canvas_1_height }") 
+
         # Scale canvas for display if image is too wide
-        if self.canvas_1_width > 600:  #IH250812 HEURISTIC
+        self.canvas_scale  = 1.0
+        canvas_max_width = 600  #IH250812 HEURISTIC
+        if self.canvas_1_width > canvas_max_width:
+            self.canvas_scale  = canvas_max_width/self.canvas_1_width 
             aspect_ratio = self.canvas_1_height / self.canvas_1_width
-            self.canvas_1_width = 600
+            self.canvas_1_width = canvas_max_width
             self.canvas_1_height = int(self.canvas_1_width * aspect_ratio)
+
 
     def select_ROI(self):  
             
@@ -51,18 +57,34 @@ class ROISelector:
           
         # st.write(f"Canvas (json_data): {self.canvas_1.json_data}") 
         for index,object in enumerate(self.canvas_1.json_data['objects']):
-            for param in ['left','top','width','height','angle']:
+            for param in ['left','top','width','height','scaleX','scaleY','angle']:
                 self.lane_ROI[index][param] = object[param]
 
-            st.write(f"Object {object['type'], index}:  " + 
-                f"left: {object['left']},   " +
-                f"top: {object['top']},   " +
-                f"width: {object['width']},   " +
-                f"height: {object['height']},   " +
-                f"angle: {object['angle']},   " +
-                "")
-        #IH250821 we assume the first object to be the expected ROI 
+        #     st.write(f"Object {object['type'], index}:  " +
+        #         f"canvas scale: {self.canvas_scale},   " + 
+        #         f"original left: {object['left']/self.canvas_scale},   " +
+        #         f"original top: {object['top']/self.canvas_scale},   " +
+        #         f"original scaledwidth: {object['width']*object['scaleX']/self.canvas_scale},   " +
+        #         f"original scaledheight: {object['height']*object['scaleY']/self.canvas_scale},   " +
+        #         f"angle: {object['angle']},   " +
+        #         "")
+        # #IH250821 for the moment, we assume the first object to be the expected ROI 
   
+    def get_ROIcenter_X(self,lane_index=0):
+        return self.lane_ROI[lane_index]['left']/self.canvas_scale
+    
+    def get_ROIcenter_Y(self,lane_index=0):
+        return self.lane_ROI[lane_index]['top']/self.canvas_scale
+    
+    def get_ROIwidth(self,lane_index=0):   
+        return self.lane_ROI[lane_index]['width']*self.lane_ROI[lane_index]['scaleX']/self.canvas_scale
+    
+    def get_ROIheight(self,lane_index=0):  
+        return self.lane_ROI[lane_index]['height']*self.lane_ROI[lane_index]['scaleY']/self.canvas_scale
+    
+    def get_ROIangle(self,lane_index=0):  
+        return self.lane_ROI[lane_index]['angle']   
+    
     def canvas_1_initial_drawing(self,image: Image.Image, canvas_width: int, canvas_height):
         
         rect_object_template = {
@@ -71,8 +93,8 @@ class ROISelector:
             'originX': 'center', 'originY': 'center', 
                 'left': canvas_width*(0.5-0.04/2),   
                 'top': canvas_height*0.5, 
-                'width': canvas_width*0.04,
-                'height': canvas_height*0.65, 
+                'width':  1,    #IH250826 this works in concert with scaleX 
+                'height': 1,    #IH250826 this works in concert with scaleY
             'fill': 'rgba(255, 165, 0, 0.3)', 
             'stroke': '#FCE21B', 
                 'strokeWidth': 2, 
@@ -82,7 +104,8 @@ class ROISelector:
                 'strokeLineJoin': 'miter', 
                 'strokeUniform': True, 
                 'strokeMiterLimit': 4, 
-            'scaleX': 1, 'scaleY': 1, 
+            'scaleX': canvas_width*0.04,  #IH250826 this works in concert with width, 
+            'scaleY': canvas_height*0.65, #IH250826 this works in concert with height
             'angle': 0, 
             'flipX': False, 'flipY': False, 
             'opacity': 1, 

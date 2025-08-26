@@ -5,7 +5,7 @@
 # ------------------------------------------
 #   G A S e p o  P l a y g r o u n d  Main
 #
-#   Last Update: IH250825
+#   Last Update: IH250826a
 # 
 # 
 # ------------------------------------------
@@ -44,7 +44,7 @@ from Gepg_ROIselector import ROISelector
 from Gepg_statemanager import StateManager
 
 
-GASepoPG_version = "250825c"
+GASepoPG_version = "250826a"
   
 uploaded_buffer = None
 stateManager = StateManager()   
@@ -57,6 +57,8 @@ def main():
         st.session_state.gel_image_uploaded = None
 
     Gepg_GUIsetup()
+    gel_image_loader = None
+    gel_image_lane = None
 
     with st.expander("Image Upload"):
         gel_image_loader = GelImageLoader()
@@ -71,19 +73,23 @@ def main():
     ROI_selector = ROISelector(gel_image_8bit=gel_image_loader.gel_image_8bit)
     ROI_selector.select_ROI()
 
-    gel_image_lane1 = ROI_selector.crop_rotated_rect(
+    gel_image_lane = []    
+    for lane_index in range(len(ROI_selector.lane_ROI)):
+        gel_image_lane.append(ROI_selector.crop_rotated_rect(
             image=gel_image_loader.gel_image_8bit,
-            centerleft  =  ROI_selector.lane_ROI[0]['left'],
-            centertop   =  ROI_selector.lane_ROI[0]['top'],
-            width       =  ROI_selector.lane_ROI[0]['width'],
-            height      =  ROI_selector.lane_ROI[0]['height'],
-            angle       =  ROI_selector.lane_ROI[0]['angle']
-        )
+            centerleft  =  ROI_selector.get_ROIcenter_X(lane_index), #IH250821 we assume the first object to be the expected ROI 
+                                                            #IH250825 TODO generalize for multiple lanes
+            centertop   =  ROI_selector.get_ROIcenter_Y(lane_index),
+            width       =  ROI_selector.get_ROIwidth(lane_index),
+            height      =  ROI_selector.get_ROIheight(lane_index),
+            angle       =  ROI_selector.get_ROIangle(lane_index)
+        ))
     
-    st.image(gel_image_loader.gel_image_8bit)  #IH250825 for debugging only
-
     with st.expander("Lane Viewer"):
-        st.image(gel_image_lane1, caption="Lane1",width=30)
+        cols = st.columns(20,gap='small')  #IH250826 HEURISTIC!
+        cols[0].image(gel_image_lane[0], caption="L1", width=30)
+        cols[1].image(gel_image_lane[1], caption="L2", width=30)
+        cols[2].image(gel_image_lane[2], caption="L3", width=30)
 
     with st.expander("Testing Plotly"): 
         TestingPlotly()
@@ -99,7 +105,10 @@ def Gepg_GUIsetup():
         layout="wide",
         initial_sidebar_state="expanded"
     )
-    st.title(f"GASepo Playground Ver.{GASepoPG_version}")
+    st.title(f"GASepo Playground")
+    st.subheader(f"Ver.{GASepoPG_version}")
+    st.write('<span style="color:red">This is an experimental platform. Do not use for real analysis!</span>', unsafe_allow_html=True)
+
     st.sidebar.header("GASepo Playground Controls")
     if st.sidebar.button("Store status"):
         stateManager.save_state_to_pickle_and_download()
