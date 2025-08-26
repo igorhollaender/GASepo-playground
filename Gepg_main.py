@@ -5,7 +5,7 @@
 # ------------------------------------------
 #   G A S e p o  P l a y g r o u n d  Main
 #
-#   Last Update: IH250826a
+#   Last Update: IH250826
 # 
 # 
 # ------------------------------------------
@@ -42,9 +42,10 @@ from streamlit_drawable_canvas import st_canvas
 from Gepg_imageloader import GelImageLoader
 from Gepg_ROIselector import ROISelector    
 from Gepg_statemanager import StateManager
+from Gepg_laneprofilepresenter import plot_image_and_column_sums 
 
 
-GASepoPG_version = "250826a"
+GASepoPG_version = "250826b"
   
 uploaded_buffer = None
 stateManager = StateManager()   
@@ -73,9 +74,9 @@ def main():
     ROI_selector = ROISelector(gel_image_8bit=gel_image_loader.gel_image_8bit)
     ROI_selector.select_ROI()
 
-    gel_image_lane = []    
+    st.session_state.gel_image_lane = []    
     for lane_index in range(len(ROI_selector.lane_ROI)):
-        gel_image_lane.append(ROI_selector.crop_rotated_rect(
+        st.session_state.gel_image_lane.append(ROI_selector.crop_rotated_rect(
             image=gel_image_loader.gel_image_8bit,
             centerleft  =  ROI_selector.get_ROIcenter_X(lane_index), #IH250821 we assume the first object to be the expected ROI 
                                                             #IH250825 TODO generalize for multiple lanes
@@ -86,10 +87,10 @@ def main():
         ))
     
     with st.expander("Lane Viewer"):
-        cols = st.columns(20,gap='small')  #IH250826 HEURISTIC!
-        cols[0].image(gel_image_lane[0], caption="L1", width=30)
-        cols[1].image(gel_image_lane[1], caption="L2", width=30)
-        cols[2].image(gel_image_lane[2], caption="L3", width=30)
+        cols = st.columns(3)  #IH250826 HEURISTIC!
+        cols[0].image(st.session_state.gel_image_lane[0], caption="L1", width=st.session_state.gel_image_lane[0].shape[1]//2) 
+        cols[1].image(st.session_state.gel_image_lane[1], caption="L2", width=st.session_state.gel_image_lane[1].shape[1]//2)
+        cols[2].image(st.session_state.gel_image_lane[2], caption="L3", width=st.session_state.gel_image_lane[2].shape[1]//2)  
 
     with st.expander("Testing Plotly"): 
         TestingPlotly()
@@ -139,6 +140,8 @@ def TestingPlotly():
     fig = px.line (x=[1,2,3,4,5,6,7,8,9,10],
                 y=[10,20,30,40,50,60,70,80,90,100])
 
+    #IH250826 TODO this does not work; replace with actual image lane
+    # fig = plot_image_and_column_sums(image=gel_image_loader.gel_image_8bit)
     st.plotly_chart(fig, use_container_width=True)
                
   
