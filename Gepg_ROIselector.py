@@ -1,7 +1,7 @@
 #
 #   G e p g _ R O I s e l e c t o r . p y
 #
-#   Last Update: IH250826
+#   Last Update: IH250827
 # 
 # 
 #
@@ -26,7 +26,7 @@ class ROISelector:
 
         self.background_image = None
         self.background_image = Image.fromarray(220-gel_image_8bit) # IH250821 invert image for better visibility on canvas
-                #IH250821 EXPERIMENTAL enhance high bands (thats why we use 200 and not 255)
+                #IH250821 EXPERIMENTAL enhance high bands (that's why we use 200 and not 255)
         self.canvas_1_height, self.canvas_1_width = gel_image_8bit.shape[:2]
         # st.write(f"W,H: {self.canvas_1_width}, {self.canvas_1_height }") 
 
@@ -59,7 +59,11 @@ class ROISelector:
         for index,object in enumerate(self.canvas_1.json_data['objects']):
             for param in ['left','top','width','height','scaleX','scaleY','angle']:
                 self.lane_ROI[index][param] = object[param]
-
+                self.lane_ROI[index]['style'] = {
+                    'fill': object['fill'],
+                    'stroke': object['stroke'],
+                    'strokeWidth': object['strokeWidth']
+                }       
         #     st.write(f"Object {object['type'], index}:  " +
         #         f"canvas scale: {self.canvas_scale},   " + 
         #         f"original left: {object['left']/self.canvas_scale},   " +
@@ -84,6 +88,9 @@ class ROISelector:
     
     def get_ROIangle(self,lane_index=0):  
         return self.lane_ROI[lane_index]['angle']   
+    
+    def get_ROIstyle(self,lane_index=0):
+        return self.lane_ROI[lane_index]['style']
     
     def canvas_1_initial_drawing(self,image: Image.Image, canvas_width: int, canvas_height):
         
