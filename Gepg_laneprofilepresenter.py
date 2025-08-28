@@ -1,7 +1,7 @@
 #
 #   G e p g _ l a n e p r o f i l e p r e s e n t e r . p y
 #
-#   Last Update: IH250827
+#   Last Update: IH250828
 # 
 # 
 #
@@ -39,6 +39,9 @@ class LaneProfilePresenter:
         if not isinstance(self.lane_image, np.ndarray) or self.lane_image.ndim != 2:
             raise ValueError("Input must be a 2D NumPy array.")
 
+        #IH250828 transpose the image to make columns vertical
+        self.lane_image = self.lane_image.T
+
         # Get image dimensions for plot axes
         height, width = self.lane_image.shape
         column_indices = np.arange(width)
@@ -52,13 +55,13 @@ class LaneProfilePresenter:
             rows=2, cols=1,
             shared_xaxes=True,
             vertical_spacing=0.02,
-            row_heights=[0.8, 0.2]  # Allocate 80% of the height to the image
+            row_heights=[0.4, 0.6]  # Allocate 40% of the height to the image
         )
 
         # --- Top Subplot: Image ---
         # Add the image trace. We use a grayscale color scale.
         fig.add_trace(
-            go.Image(z=self.lane_image, colorscale='gray'),
+            go.Heatmap(z=self.lane_image, colorscale='gray',showscale=False),
             row=1, col=1
         )
 
@@ -71,7 +74,7 @@ class LaneProfilePresenter:
 
         # --- Layout and Alignment ---
         fig.update_layout(
-            title_text="Image with Column-wise Pixel Sum",
+            title_text="Lane XXX",  #IH250828 TODO update with actual lane identifier
             margin=dict(l=20, r=20, t=50, b=20), # Adjust margins for a clean look
             showlegend=False # Hide the legend as there's only one trace in the plot
         )
@@ -80,8 +83,8 @@ class LaneProfilePresenter:
         fig.update_xaxes(showticklabels=False, row=1, col=1)
         
         # Add axis titles for clarity
-        fig.update_yaxes(title_text="Row", row=1, col=1)
-        fig.update_xaxes(title_text="Column Index", row=2, col=1)
+        # fig.update_yaxes(title_text="Row", row=1, col=1)
+        fig.update_xaxes(title_text="Row Index", row=2, col=1)
         fig.update_yaxes(title_text="Pixel Sum", row=2, col=1)
 
         return fig
