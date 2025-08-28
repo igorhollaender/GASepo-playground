@@ -97,6 +97,8 @@ def main():
         for c in range(3):  
             lane_profile_presenter = LaneProfilePresenter(st.session_state.gel_image_lane[c])
             fig = lane_profile_presenter.plot_image_and_column_sums() 
+            lane_stroke = ROI_selector.get_ROIstyle(lane_index=c)['stroke']
+            st.write(f'<span style="background-color:{lane_stroke}; color:white">&nbsp;Lane {c+1}&nbsp;</span>', unsafe_allow_html=True)
             st.plotly_chart(fig, use_container_width=True)
 
 

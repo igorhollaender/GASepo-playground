@@ -61,7 +61,9 @@ class LaneProfilePresenter:
         # --- Top Subplot: Image ---
         # Add the image trace. We use a grayscale color scale.
         fig.add_trace(
-            go.Heatmap(z=self.lane_image, colorscale='gray',showscale=False),
+            go.Heatmap(z=self.lane_image, colorscale='gray',showscale=False, 
+                       zmin=0, zmax=256, zsmooth='best'),
+                       #IH250828 TODO adapt this to show true 16bit depth
             row=1, col=1
         )
 
@@ -74,14 +76,14 @@ class LaneProfilePresenter:
 
         # --- Layout and Alignment ---
         fig.update_layout(
-            title_text="Lane XXX",  #IH250828 TODO update with actual lane identifier
             margin=dict(l=20, r=20, t=50, b=20), # Adjust margins for a clean look
             showlegend=False # Hide the legend as there's only one trace in the plot
         )
         
-        # Hide tick labels on the image's x-axis to avoid redundancy
+        # Hide tick labels
         fig.update_xaxes(showticklabels=False, row=1, col=1)
-        
+        fig.update_yaxes(showticklabels=False, row=1, col=1)
+
         # Add axis titles for clarity
         # fig.update_yaxes(title_text="Row", row=1, col=1)
         fig.update_xaxes(title_text="Row Index", row=2, col=1)
