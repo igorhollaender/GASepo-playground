@@ -1,8 +1,8 @@
 #
 #   G e p g _ l a n e p r o f i l e p r e s e n t e r . p y
 #
-#   Last Update: IH250828
-# 
+#   Last Update: IH250901
+#  
 # 
 #
 # ------------------------------------------
@@ -16,8 +16,8 @@ import numpy as np
 
 
 class LaneProfilePresenter:
-    def __init__(self,lane_image: np.ndarray):
-        self.lane_image = lane_image
+    def __init__(self,lane_image16bit: np.ndarray):
+        self.lane_image16bit = lane_image16bit
         
     def plot_image_and_column_sums(self) -> go.Figure:
         """
@@ -36,18 +36,19 @@ class LaneProfilePresenter:
             image (np.ndarray): A 2D NumPy array representing a 16-bit grayscale image.
         """
         # Ensure input is a 2D NumPy array
-        if not isinstance(self.lane_image, np.ndarray) or self.lane_image.ndim != 2:
+        if not isinstance(self.lane_image16bit, np.ndarray) or self.lane_image16bit.ndim != 2:
             raise ValueError("Input must be a 2D NumPy array.")
 
         #IH250828 transpose the image to make columns vertical
-        self.lane_image = self.lane_image.T
+        self.lane_image16bit = self.lane_image16bit.T
 
         # Get image dimensions for plot axes
-        height, width = self.lane_image.shape
+        height, width = self.lane_image16bit.shape
         column_indices = np.arange(width)
 
         # Calculate the sum of pixel values for each column
-        column_sums = np.sum(self.lane_image, axis=0)
+        column_sums = np.sum(self.lane_image16bit, axis=0)
+        column_avg = column_sums / height  # Average pixel value per column
 
         # Create a figure with two subplots stacked vertically
         # shared_xaxes=True is the key to aligning the image and the plot
@@ -61,8 +62,8 @@ class LaneProfilePresenter:
         # --- Top Subplot: Image ---
         # Add the image trace. We use a grayscale color scale.
         fig.add_trace(
-            go.Heatmap(z=self.lane_image, colorscale='gray',showscale=False, 
-                       zmin=0, zmax=256, zsmooth='best'),
+            go.Heatmap(z=self.lane_image16bit, colorscale='gray',showscale=False, 
+                       zmin=0, zmax=256*256-1, zsmooth='best'),
                        #IH250828 TODO adapt this to show true 16bit depth
             row=1, col=1
         )
@@ -70,7 +71,7 @@ class LaneProfilePresenter:
         # --- Bottom Subplot: Column Sums Plot ---
         # Add the line plot of column sums
         fig.add_trace(
-            go.Scatter(x=column_indices, y=column_sums, mode='lines'),
+            go.Scatter(x=column_indices, y=column_avg, mode='lines'),
             row=2, col=1
         )
 
@@ -87,7 +88,7 @@ class LaneProfilePresenter:
         # Add axis titles for clarity
         # fig.update_yaxes(title_text="Row", row=1, col=1)
         fig.update_xaxes(title_text="Row Index", row=2, col=1)
-        fig.update_yaxes(title_text="Pixel Sum", row=2, col=1)
+        fig.update_yaxes(title_text="Avg Pixel Value", row=2, col=1)
 
         return fig
 

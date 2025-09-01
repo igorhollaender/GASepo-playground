@@ -5,7 +5,7 @@
 # ------------------------------------------
 #   G A S e p o  P l a y g r o u n d  Main
 #
-#   Last Update: IH250828
+#   Last Update: IH250901
 # 
 # 
 # ------------------------------------------
@@ -45,7 +45,7 @@ from Gepg_statemanager import StateManager
 from Gepg_laneprofilepresenter import LaneProfilePresenter 
 
 
-GASepoPG_version = "250828a"
+GASepoPG_version = "250901a"
   
 uploaded_buffer = None
 stateManager = StateManager()   
@@ -76,26 +76,33 @@ def main():
 
     st.session_state.gel_image_lane = []    
     for lane_index in range(len(ROI_selector.lane_ROI)):
-        st.session_state.gel_image_lane.append(ROI_selector.crop_rotated_rect(
-            image=gel_image_loader.gel_image_8bit,
+        lane8bit,lane16bit = ROI_selector.crop_rotated_rect(
+            image8bit=gel_image_loader.gel_image_8bit,
+            image16bit=gel_image_loader.gel_image_CV,
             centerleft  =  ROI_selector.get_ROIcenter_X(lane_index), #IH250821 we assume the first object to be the expected ROI 
                                                             #IH250825 TODO generalize for multiple lanes
             centertop   =  ROI_selector.get_ROIcenter_Y(lane_index),
             width       =  ROI_selector.get_ROIwidth(lane_index),
             height      =  ROI_selector.get_ROIheight(lane_index),
             angle       =  ROI_selector.get_ROIangle(lane_index)
-        ))
+        )
+        st.session_state.gel_image_lane.append(
+            {
+                'image8bit':lane8bit,
+                'image16bit':lane16bit
+            }       
+        )
     
     with st.expander("Lane Viewer"):
         cols = st.columns(3)  #IH250826 max 3 lanes supported for now
         for c in range(3):  
-            cols[c].image(st.session_state.gel_image_lane[c], width=st.session_state.gel_image_lane[c].shape[1]//2) 
+            cols[c].image(st.session_state.gel_image_lane[c]['image8bit'], width=st.session_state.gel_image_lane[c]['image8bit'].shape[1]//2) 
             lane_stroke = ROI_selector.get_ROIstyle(lane_index=c)['stroke']
             cols[c].write(f'<span style="background-color:{lane_stroke}; color:white">&nbsp;L{c+1}&nbsp;</span>', unsafe_allow_html=True)
 
     with st.expander("Lane Profile Plotter"):
         for c in range(3):  
-            lane_profile_presenter = LaneProfilePresenter(st.session_state.gel_image_lane[c])
+            lane_profile_presenter = LaneProfilePresenter(st.session_state.gel_image_lane[c]['image16bit'])
             fig = lane_profile_presenter.plot_image_and_column_sums() 
             lane_stroke = ROI_selector.get_ROIstyle(lane_index=c)['stroke']
             st.write(f'<span style="background-color:{lane_stroke}; color:white">&nbsp;Lane {c+1}&nbsp;</span>', unsafe_allow_html=True)

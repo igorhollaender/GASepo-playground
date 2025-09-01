@@ -1,7 +1,7 @@
 #
 #   G e p g _ R O I s e l e c t o r . p y
 #
-#   Last Update: IH250827
+#   Last Update: IH250901
 # 
 # 
 #
@@ -49,7 +49,8 @@ class ROISelector:
             background_image = self.background_image,
             update_streamlit=True, 
             height=self.canvas_1_height,
-            width=self.canvas_1_width, 
+            width=self.canvas_1_width,
+            # width="stretch", #IH250901  This does not work in this streamlit/canvas version
             drawing_mode="transform",
             initial_drawing=self.canvas_1_initial_drawing(self.background_image,self.canvas_1_width,self.canvas_1_height),
             key="canvas_1",
@@ -151,14 +152,15 @@ class ROISelector:
             rect_lane3
             ]}
 
-    def crop_rotated_rect(self,image: np.ndarray, centerleft: int, centertop: int, width: int, height: int, angle: float, interpolation: int = cv2.INTER_LINEAR) -> np.ndarray:
+    def crop_rotated_rect(self,image8bit: np.ndarray, image16bit: np.ndarray, centerleft: int, centertop: int, width: int, height: int, angle: float, interpolation: int = cv2.INTER_LINEAR) -> np.ndarray:
         """
         Origin: Gemini
 
         Crops a slanted rectangular region of interest (ROI) from an image.
 
         Args:
-            image (np.ndarray): The source image in OpenCV format (NumPy array).
+            image8bit (np.ndarray): The source image in OpenCV format (NumPy array).
+            image16bit (np.ndarray): The source image in OpenCV format (NumPy array).
             centerleft (int): The x-coordinate of center of the rectangle's bounding box.
             centertop (int): The y-coordinate of the center corner of the rectangle's bounding box.
             width (int): The width of the rectangle.
@@ -168,7 +170,10 @@ class ROISelector:
                                         Defaults to cv2.INTER_LINEAR.
 
         Returns:
-            np.ndarray: The cropped image of the specified ROI.
+            np.ndarray, np.ndarray: The cropped 8bit and 16bit images of the specified ROI.
+    
+    Side effect: we populate also the 16bit image, but we do not return it.
+                
         """
         # 1. Get the center of the rectangle
         center = (centerleft, centertop)
@@ -178,11 +183,17 @@ class ROISelector:
         rotation_matrix = cv2.getRotationMatrix2D(center=center, angle=angle, scale=1.0)
 
         # 3. Get the image dimensions
-        img_height, img_width = image.shape[:2]
+        img_height, img_width = image8bit.shape[:2]
 
         # 4. Rotate the entire image
-        rotated_image = cv2.warpAffine(
-            src=image,
+        rotated_image8bit = cv2.warpAffine(
+            src=image8bit,
+            M=rotation_matrix,
+            dsize=(img_width, img_height),
+            flags=interpolation
+        )
+        rotated_image16bit = cv2.warpAffine(
+            src=image16bit,
             M=rotation_matrix,
             dsize=(img_width, img_height),
             flags=interpolation
@@ -193,6 +204,7 @@ class ROISelector:
         crop_y = int(centertop - height / 2)
 
         # 6. Perform the crop on the rotated image and return it
-        cropped_image = rotated_image[crop_y : crop_y + int(height), crop_x : crop_x + int(width)]
-        
-        return cropped_image
+        self.cropped_image8bit = rotated_image8bit[crop_y : crop_y + int(height), crop_x : crop_x + int(width)]
+        self.cropped_image16bit = rotated_image16bit[crop_y : crop_y + int(height), crop_x : crop_x + int(width)]    
+    
+        return self.cropped_image8bit,self.cropped_image16bit
