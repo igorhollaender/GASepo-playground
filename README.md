@@ -13,5 +13,5 @@ A simple Streamlit app for testing gel image analysis algorithms
 2. Run the app
 
    ```
-   $ streamlit run streamlit_app.py
+   $ streamlit run Gepg_main.py
    ```
