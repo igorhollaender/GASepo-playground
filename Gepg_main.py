@@ -5,7 +5,7 @@
 # ------------------------------------------
 #   G A S e p o  P l a y g r o u n d  Main
 #
-#   Last Update: IH250901
+#   Last Update: IH250902
 # 
 # 
 # ------------------------------------------
@@ -43,9 +43,10 @@ from Gepg_imageloader import GelImageLoader
 from Gepg_ROIselector import ROISelector    
 from Gepg_statemanager import StateManager
 from Gepg_laneprofilepresenter import LaneProfilePresenter 
+from Gepg_laneclassifier import LaneClassifier
 
 
-GASepoPG_version = "250901a"
+GASepoPG_version = "250902a"
   
 uploaded_buffer = None
 stateManager = StateManager()   
