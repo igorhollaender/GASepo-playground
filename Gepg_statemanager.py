@@ -1,7 +1,7 @@
 #
 #   G e p g _ s t a t e m a n a g e r . p y
 #
-#   Last Update: IH250825
+#   Last Update: IH250901
 # 
 # 
 #
@@ -18,15 +18,20 @@ class StateManager:
 #IH250825 TODO update 
 
     def __init__(self):
-        pass
+        if 'stored_state_buffer' not in st.session_state:
+            st.session_state.stored_state_buffer = io.BytesIO()
+        self.buffer = None  
 
     def save_state_to_pickle_and_download(self):
-        buffer = io.BytesIO()
-        pickle.dump(st.session_state, buffer)
-        buffer.seek(0)
+        
+        for key in st.session_state:
+            print(f"Storing {key}") 
+        
+        pickle.dump(st.session_state, st.session_state.stored_state_buffer)
+        st.session_state.stored_state_buffer.seek(0)
         st.sidebar.download_button(
             label="Download State",
-            data=buffer,
+            data=st.session_state.stored_state_buffer,
             file_name="gasepo_playground_state.pkl",
             mime="application/octet-stream"
         )
@@ -37,18 +42,17 @@ class StateManager:
                 loaded_state = pickle.load(f)
                 for key, value in loaded_state.items():
                     st.session_state[key] = value
-                    st.write(f"Loaded {key}: value is {value}") 
+                    st.write(f"Loaded {key}") 
         except FileNotFoundError:
             st.warning("No saved state found. Starting fresh!")
 
     def load_state_from_buffer(self):
-        global uploaded_buffer
-        if uploaded_buffer is not None:
-                loaded_state = pickle.load(uploaded_buffer)
+        if st.session_state.stored_state_buffer is not {}:
+                st.write("Loading state from buffer...")
+                loaded_state = pickle.load(st.session_state.stored_state_buffer)
                 for key, value in loaded_state.items():
                     st.session_state[key] = value
-                    st.write(f"Loaded {key}: value is {value}")
-
+                    print(f"Loaded {key}: value is {value}"[:80])
 
     def reset_session_state(self):
         for key in list(st.session_state.keys()):

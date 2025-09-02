@@ -129,7 +129,7 @@ def Gepg_GUIsetup():
         stateManager.save_state_to_pickle_and_download()
         st.sidebar.write("Status stored successfully!")
     if st.sidebar.button("Load recent status"):
-        stateManager.load_state_from_pickle()
+        stateManager.load_state_from_buffer()
         st.sidebar.write("Status loaded successfully!")
     if st.sidebar.button("Load status from file"):
         global uploaded_buffer
