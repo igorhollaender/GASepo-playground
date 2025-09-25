@@ -1,7 +1,7 @@
 #
 #   G e p g _ i m a g e l o a d e r . p y
 #
-#   Last Update: IH250827
+#   Last Update: IH250925
 # 
 # 
 #
@@ -42,6 +42,12 @@ class GelImageLoader:
             st.session_state.load_predefined_test_image = True
             st.rerun()
 
+        print(f"self.gel_image_uploaded =  {self.gel_image_uploaded}")
+        print(f"st.session_state.use_stored_data =  {st.session_state.use_stored_data}")
+
+        #if st.session_state.use_stored_data:
+        #    self.gel_image_uploaded = st.session_state.gel_image_uploaded
+        
         if self.gel_image_uploaded is not None:
             self.gel_image_bytes = np.asarray(bytearray(self.gel_image_uploaded.read()), dtype=np.uint8)
             self.gel_image_CV = cv2.imdecode(self.gel_image_bytes, cv2.IMREAD_UNCHANGED)

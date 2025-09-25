@@ -5,7 +5,7 @@
 # ------------------------------------------
 #   G A S e p o  P l a y g r o u n d  Main
 #
-#   Last Update: IH250902
+#   Last Update: IH250924
 # 
 # 
 # ------------------------------------------
@@ -19,7 +19,7 @@
 #           2. run `pip install -r requirements.txt` in terminal
 #           3. restart the server (run streamlit_app.py)
 #              or use the full command:
-#                streamlit run streamlit_app.py --server.enableCORS false --server.enableXsrfProtection false
+#                streamlit run Gepg_main.py --server.enableCORS false --server.enableXsrfProtection false
 #
 # ------------------------------------------
 #   IMPORTANT:
@@ -46,7 +46,7 @@ from Gepg_laneprofilepresenter import LaneProfilePresenter
 from Gepg_laneclassifier import LaneClassifier
 
 
-GASepoPG_version = "250902a"
+GASepoPG_version = "250925b"
   
 uploaded_buffer = None
 stateManager = StateManager()   
@@ -109,7 +109,8 @@ def main():
             st.write(f'<span style="background-color:{lane_stroke}; color:white">&nbsp;Lane {c+1}&nbsp;</span>', unsafe_allow_html=True)
             st.plotly_chart(fig, use_container_width=True)
 
-
+    stateManager.finalize_streamlit_run()
+    
 
 def Gepg_GUIsetup():
 
@@ -129,7 +130,7 @@ def Gepg_GUIsetup():
     if st.sidebar.button("Store status"):
         stateManager.save_state_to_pickle_and_download()
         st.sidebar.write("Status stored successfully!")
-    if st.sidebar.button("Load recent status"):
+    if st.sidebar.button("Load recent status",disabled=not st.session_state.buffer_filled):
         stateManager.load_state_from_buffer()
         st.sidebar.write("Status loaded successfully!")
     if st.sidebar.button("Load status from file"):
